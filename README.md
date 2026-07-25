@@ -1,0 +1,118 @@
+# bore-soplos — BORE CPU Scheduler patch for Soplos Linux
+
+Rebase of firelzrd's BORE (Burst-Oriented Response Enhancer) scheduler patch,
+kept building against current Soplos kernel point releases when upstream
+hasn't caught up yet.
+
+> Not yet wired into **soplos-kernel-installer** — `core/downloader.py` still
+> fetches BORE from firelzrd/CachyOS upstream. This repo exists so a working
+> patch is ready the moment it's needed, not to replace the upstream source
+> by default. See "Status" below.
+
+---
+
+## What BORE does
+
+BORE tracks each task's recent CPU "burst" time (how long it has run since
+last sleeping) and converts that into a scheduling penalty: tasks that burst
+less — interactive tasks like a compositor, a terminal, game input threads —
+get prioritized over CPU-bound background tasks. The penalty decays over time
+and is partly inherited by child/thread-group tasks so short-lived forks
+don't restart at a neutral priority. It replaces EEVDF's tunable-scaling
+defaults with a simpler constant-slice model (`CONFIG_MIN_BASE_SLICE_NS`).
+
+Upstream project: [firelzrd/bore-scheduler](https://github.com/firelzrd/bore-scheduler).
+Soplos does not modify this algorithm — only where necessary to keep the
+patch applying against a newer kernel source tree (see below).
+
+---
+
+## Patch files
+
+| File | Kernel versions | Base |
+|------|-----------------|------|
+| `patches/0001-bore-7.1.patch` | Linux 7.1.0 – 7.1.5 | firelzrd `stable/linux-7.1-bore`, BORE 6.6.3 |
+
+Only one file exists so far, for the kernel line Soplos currently ships.
+
+---
+
+## Why this rebase exists (7.1.5)
+
+firelzrd publishes BORE against the `-rc1` snapshot of each kernel line
+(`linux7.1-rc1-bore-6.6.3.patch`). Soplos ships stable point releases
+(7.1.5), which accumulate upstream stable-tree backports on top of that rc1
+base. Most of the time the drift is small enough that `patch -p1` applies
+with a line-offset only.
+
+For 7.1.5 specifically, a stable backport to `kernel/sched/fair.c` reworked
+`util_est` handling (moved the `util_est_update()` call out of
+`dequeue_task_fair()` into `update_load_avg()`, behind a new
+`UPDATE_UTIL_EST` flag). BORE's `dequeue_task_fair()` hook
+(`restart_burst_bore()` call) was textually anchored right after that now-gone
+`util_est_update()` line, so of the patch's 21 hunks, exactly 1 failed —
+everything else applied with offset only, no fuzz.
+
+**Fix applied:** the hook was moved to anchor after `util_est_dequeue(&rq->cfs, p)`
+instead (same function, a few lines earlier — the nearest still-existing
+anchor). No change to BORE's own logic: same `update_curr()` /
+`restart_burst_bore()` calls, same `(flags & DEQUEUE_SLEEP) && entity_is_task(se)`
+guard, unmodified.
+
+---
+
+## Status
+
+- Verified with `patch -p1 --dry-run` against the real kernel source tree
+  (kernel.org, tag `v7.1.5`, stable branch) — all 13 touched files apply
+  clean, no fuzz, no rejects.
+- **Not build-tested.** Nobody has compiled a kernel with this patch yet.
+- **Not boot-tested.**
+- Not verified against 7.1.0–7.1.4 (x3d-soplos's equivalent patch applies to
+  the whole 7.1.x line with offset only; this one hasn't been checked the
+  same way yet).
+
+Do not package a `soplos-bore` kernel from this patch until it has been
+compiled and booted at least once.
+
+---
+
+## Applying the patch manually
+
+```bash
+cd /path/to/linux-7.1.5
+patch -p1 < /path/to/patches/0001-bore-7.1.patch
+```
+
+---
+
+## Modified files
+
+| File | Change |
+|------|--------|
+| `include/linux/sched.h` | `struct bore_ctx` embedded in `task_struct` |
+| `include/linux/sched/bore.h` | New file — public API |
+| `init/Kconfig` | `CONFIG_SCHED_BORE` option |
+| `kernel/Kconfig.hz` | `CONFIG_MIN_BASE_SLICE_NS` option |
+| `kernel/exit.c`, `kernel/fork.c` | Sibling-list handling for burst inheritance on fork/exit |
+| `kernel/futex/waitwake.c` | Marks `bore.futex_waiting` around `schedule()` |
+| `kernel/sched/Makefile` | Builds `bore.o` when `CONFIG_SCHED_BORE=y` |
+| `kernel/sched/bore.c` | New file — burst penalty algorithm, inheritance caches |
+| `kernel/sched/core.c` | `effective_prio_bore()` used in `set_load_weight()`; `sched_init_bore()` call |
+| `kernel/sched/debug.c` | Extra sysctl/debugfs entries, `bore.score` in task dumps |
+| `kernel/sched/fair.c` | Hooks in `update_curr`, `place_entity`, `requeue_delayed_entity`, `enqueue_task_fair`, `dequeue_task_fair`, `yield_task_fair`, `switched_to_fair` — this is the file with the 7.1.5-specific rebase described above |
+| `kernel/sched/sched.h` | Extern declarations for the new sysctls |
+
+---
+
+## Kernel variants using this patch
+
+Intended for `soplos-bore` and any variant combining `bore` with `ntsync`/`x3d`
+(x3d always requires bore, per `soplos-kernel-installer`'s patch selector).
+Not currently built — see "Status".
+
+---
+
+## License
+
+GPL-2.0 (inherited from the Linux kernel and firelzrd's original patch).
