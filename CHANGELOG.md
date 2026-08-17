@@ -1,5 +1,22 @@
 # Changelog — bore-soplos
 
+## 1.1.0 — 2026-08-17
+
+### Added
+
+- `0001-bore-7.2.patch` — BORE 6.8.0-rc1 rebase for Linux 7.2. Applies clean
+  against real 7.2 sources with plain line-offset only (up to 2 lines in
+  `fair.c`), no fuzz, no failed hunks — no logic changes needed relative to
+  the 7.1 line.
+
+### Notes
+
+- Verified with `patch -p1 --dry-run` against kernel.org tag `v7.2`, all 13
+  touched files.
+- Not build-tested, not boot-tested yet.
+- Kernel 7.2 was released 2026-08-16; no upstream BORE source had a 7.2
+  build ready at time of writing, which is what this rebase is for.
+
 ## 1.0.0 — 2026-07-25
 
 Initial release.

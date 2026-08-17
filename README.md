@@ -31,9 +31,11 @@ patch applying against a newer kernel source tree (see below).
 
 | File | Kernel versions | Base |
 |------|-----------------|------|
-| `patches/0001-bore-7.1.patch` | Linux 7.1.0 – 7.1.5 | firelzrd `stable/linux-7.1-bore`, BORE 6.6.3 |
+| `patches/0001-bore-7.1.patch` | Linux 7.1.0 – 7.1.5 | BORE 6.6.3 |
+| `patches/0001-bore-7.2.patch` | Linux 7.2 | BORE 6.8.0-rc1 |
 
-Only one file exists so far, for the kernel line Soplos currently ships.
+`soplos-kernel-installer` requests the file matching the exact `major.minor`
+kernel line — there is no generic fallback for BORE, unlike X3D/march.
 
 ---
 
@@ -61,18 +63,33 @@ guard, unmodified.
 
 ---
 
+## Why this rebase exists (7.2)
+
+Kernel 7.2 was released 2026-08-16. No upstream BORE source had a 7.2
+release ready at the time — `soplos-kernel-installer`'s dry-run fallback
+chain fell through to this repo, and the file did not exist yet, which
+made the whole BORE patch silently unavailable on 7.2 until this rebase.
+
+Unlike 7.1.5, this one needed **no fix at all** — verified applying clean
+against real 7.2 sources with plain line-offset only (up to 2 lines in
+`fair.c`), no fuzz, no failed hunks.
+
+---
+
 ## Status
 
-- Verified with `patch -p1 --dry-run` against the real kernel source tree
-  (kernel.org, tag `v7.1.5`, stable branch) — all 13 touched files apply
-  clean, no fuzz, no rejects.
-- **Not build-tested.** Nobody has compiled a kernel with this patch yet.
-- **Not boot-tested.**
+- **7.1.5:** verified with `patch -p1 --dry-run` against the real kernel
+  source tree (kernel.org, tag `v7.1.5`, stable branch) — all 13 touched
+  files apply clean, no fuzz, no rejects.
+- **7.2:** same verification, tag `v7.2` — clean, no fuzz, no rejects.
+- **Not build-tested on either.** Nobody has compiled a kernel from these
+  patches yet.
+- **Not boot-tested on either.**
 - Not verified against 7.1.0–7.1.4 (x3d-soplos's equivalent patch applies to
   the whole 7.1.x line with offset only; this one hasn't been checked the
   same way yet).
 
-Do not package a `soplos-bore` kernel from this patch until it has been
+Do not package a `soplos-bore` kernel from either patch until it has been
 compiled and booted at least once.
 
 ---
@@ -82,6 +99,10 @@ compiled and booted at least once.
 ```bash
 cd /path/to/linux-7.1.5
 patch -p1 < /path/to/patches/0001-bore-7.1.patch
+
+# or, for 7.2:
+cd /path/to/linux-7.2
+patch -p1 < /path/to/patches/0001-bore-7.2.patch
 ```
 
 ---
