@@ -78,19 +78,21 @@ against real 7.2 sources with plain line-offset only (up to 2 lines in
 
 ## Status
 
-- **7.1.5:** verified with `patch -p1 --dry-run` against the real kernel
-  source tree (kernel.org, tag `v7.1.5`, stable branch) — all 13 touched
-  files apply clean, no fuzz, no rejects.
-- **7.2:** same verification, tag `v7.2` — clean, no fuzz, no rejects.
-- **Not build-tested on either.** Nobody has compiled a kernel from these
-  patches yet.
-- **Not boot-tested on either.**
+- **7.1.5:** verified with `patch -p1 --dry-run` (all 13 touched files
+  clean, no fuzz, no rejects), **compiled and boot-tested on real
+  hardware** — confirmed active via runtime sysctl checks, not just
+  compiled in.
+- **7.2:** verified with `patch -p1 --dry-run` (clean, no fuzz, no
+  rejects). **Build-verified** as part of the `bore-ntsync` variant for
+  both V1 and V3, via a real Stock batch build producing actual
+  `linux-image-7.2.0-soplos-bore-ntsync-v{1,3}` `.deb` packages — no
+  compile errors. **Not yet boot-tested** on 7.2 specifically.
 - Not verified against 7.1.0–7.1.4 (x3d-soplos's equivalent patch applies to
   the whole 7.1.x line with offset only; this one hasn't been checked the
   same way yet).
 
-Do not package a `soplos-bore` kernel from either patch until it has been
-compiled and booted at least once.
+Do not package a `soplos-bore` 7.2 kernel for release until it has also
+been boot-tested on real hardware, the same way 7.1.5 already has been.
 
 ---
 
