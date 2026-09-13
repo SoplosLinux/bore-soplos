@@ -128,7 +128,7 @@ patch -p1 < /path/to/patches/0001-bore-7.2.patch
 
 Intended for `soplos-bore` and any variant combining `bore` with `ntsync`/`x3d`
 (x3d always requires bore, per `soplos-kernel-installer`'s patch selector).
-Not currently built — see "Status".
+Built and boot-tested — see "Status".
 
 ---
 
