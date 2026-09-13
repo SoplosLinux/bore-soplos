@@ -83,16 +83,12 @@ against real 7.2 sources with plain line-offset only (up to 2 lines in
   hardware** — confirmed active via runtime sysctl checks, not just
   compiled in.
 - **7.2:** verified with `patch -p1 --dry-run` (clean, no fuzz, no
-  rejects). **Build-verified** as part of the `bore-ntsync` variant for
-  both V1 and V3, via a real Stock batch build producing actual
-  `linux-image-7.2.0-soplos-bore-ntsync-v{1,3}` `.deb` packages — no
-  compile errors. **Not yet boot-tested** on 7.2 specifically.
+  rejects), **compiled and boot-tested on real hardware**
+  (`7.2.5-soplos-bore-ntsync-v3`, currently in production use); this
+  validation has been ongoing across every Soplos kernel release since 7.1.
 - Not verified against 7.1.0–7.1.4 (x3d-soplos's equivalent patch applies to
   the whole 7.1.x line with offset only; this one hasn't been checked the
   same way yet).
-
-Do not package a `soplos-bore` 7.2 kernel for release until it has also
-been boot-tested on real hardware, the same way 7.1.5 already has been.
 
 ---
 

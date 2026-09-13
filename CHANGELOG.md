@@ -13,7 +13,8 @@
 
 - Verified with `patch -p1 --dry-run` against kernel.org tag `v7.2`, all 13
   touched files.
-- Not build-tested, not boot-tested yet.
+- Compiled and boot-tested on real hardware (`7.2.5-soplos-bore-ntsync-v3`,
+  currently in production use).
 - Kernel 7.2 was released 2026-08-16; no upstream BORE source had a 7.2
   build ready at time of writing, which is what this rebase is for.
 
@@ -40,6 +41,5 @@ Initial release.
 
 - Verified with `patch -p1 --dry-run` against kernel.org tag `v7.1.5`
   (stable branch), all 13 touched files.
-- Not build-tested, not boot-tested. Do not package a kernel from this patch
-  without doing both first.
+- Compiled and boot-tested on real hardware.
 - Not submitted upstream. Soplos Linux rebase of firelzrd/bore-scheduler.
